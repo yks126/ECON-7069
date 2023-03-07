@@ -1,0 +1,28 @@
+---
+title: "Question 1.3"
+author: "Simon"
+date: "2023-03-07"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+sum_two_number <- function(a, b){
+   tryCatch(
+        #try to do this
+        {
+          sum(a, b, na.rm = TRUE)
+        },
+        #if an error occurs
+        error = function(e) {
+            message('you should enter two numbers')
+            print(e)
+        }
+   )
+}
+```
