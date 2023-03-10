@@ -54,6 +54,11 @@ z <- (m0 - m1 + C)/ sd_v
 
 E_w0_I <- m0 + sd0 * sd1 / sd_v * (rho - sd0 / sd1) * (dnorm(z) / (1 - pnorm(z)))
 E_w1_I <- m0 + sd0 * sd1 / sd_v * (sd1 / sd0 - rho) * (dnorm(z) / (1 - pnorm(z)))
+Q_0 <- E_w0_I - m0
+Q_1 <- E_w1_I - m1
+
 E_w0_I
 E_w1_I
+Q_0
+Q_1
 ```
