@@ -17,13 +17,16 @@ library(plyr)
 
 ```{r}
 data <- read.csv(file = "psfd_rr2020_v202208_csv.csv") %>%
-  select(., c("a02a", "w03"))
+  mutate(., age = 112 - a02a) %>%
+  select(., c("age", "w03")) 
+  
+  
 data$w03 <- ifelse(data$w03 == 1, 1, 0)
 
 
-rate_of_working <- aggregate(w03 ~ a02a, data = data, mean)
+rate_of_working <- aggregate(w03 ~ age, data = data, mean)
 
-ggplot(rate_of_working, aes(x = w03, y = a02a)) + 
+ggplot(rate_of_working, aes(x = w03, y = age)) + 
   geom_line() +
   labs(title = "Rate of working against age", x = "mean of work dummy", y = "age")
 
