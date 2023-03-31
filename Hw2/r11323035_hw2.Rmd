@@ -1,0 +1,88 @@
+---
+title: "homework 2"
+author: "Simon"
+date: "2023-03-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(MASS)
+```
+
+```{r}
+#Q5-5
+#set parameters
+beta_1 <- 0.3
+beta_2 <- 0.7
+
+mu_0 <- 7
+mu_1 <- 5
+sigma_0 <- 1
+sigma_1 <- 2
+sigma_01 <- 0.5
+rho_01 <- sigma_01 / (sigma_0 * sigma_1)
+
+sigma_v <- sqrt(sigma_0 ^ 2 + sigma_1 ^ 2 - 2 * sigma_01)
+
+
+#generate data
+N <- 10 ^ 5
+
+sig <- matrix(data = c(sigma_0, sigma_01, sigma_01, sigma_1), nrow = 2)
+mu <- c(0, 0)
+simulation_data <- as.data.frame(mvrnorm(n = N, mu = mu, Sigma = sig))
+colnames(simulation_data) <- c("e0", "e1")
+
+simulation_data <- simulation_data %>%
+  mutate(X1 = sample(seq(0, 20, 1), N, replace = TRUE),
+         X2 = sample(seq(0, 10, 2), N, replace = TRUE),
+         w0 = mu_0 + beta_1 * X1 + e0,
+         w1 = mu_1 + beta_1 * X1 +beta_2 * X2 + e1,
+         D  = ifelse(w1 > w0, 1, 0),
+         prop_true = 1 - pnorm((mu_0-mu_1 - beta_2*X2) / sigma_v, 0, 1))
+```
+
+```{r}
+#Q5-6
+logit <- glm(D ~ X2, data = simulation_data, family = binomial)
+simulation_data$prop_esti <- predict(logit, type = "response")
+```
+
+```{r}
+#Q5-7
+cor(simulation_data$prop_true, simulation_data$prop_esti)
+```
+
+```{r}
+#Q5-8
+simulation_data <- simulation_data %>%
+  mutate(weight_true = ifelse(D == 1, 1 / prop_true, 1 / (1 - prop_true)),
+         weight_esti = ifelse(D == 1, 1 / prop_esti, 1 / (1 - prop_esti)),
+         w = ifelse(D ==1, w1, w0))
+
+ipw_true <- lm(w ~ D, weights = weight_true, data = simulation_data)
+ipw_true$coefficients
+
+ipw_esti <- lm(w ~ D, weights = weight_esti, data = simulation_data)
+ipw_esti
+```
+
+```{r}
+#Q5-9
+lm_w_x <- lm(w ~ X1 + X2, data = simulation_data)
+summary(lm_w_x)
+```
+
+```{r}
+#Q5-10
+lm_w0 <- lm(w ~ X1 , data = subset(simulation_data, D == 0))
+summary(lm_w0)
+
+lm_w1 <- lm(w ~ X1 + X2, data = subset(simulation_data, D == 1))
+summary(lm_w1)
+```
